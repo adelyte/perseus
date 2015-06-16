@@ -24,7 +24,7 @@
     <div id="problemarea">
         <div id="workarea"></div>
         <div id="hintsarea"></div>
-    </div>
+    </div>  
     <div id="answer_area_wrap">
         <div id="answer_area">
             <form id="answerform">
@@ -102,18 +102,41 @@ function initPerseus(Perseus) {
 
 var defaultQuestion = {
     "question": {
-        "content": "",
+        "content": "What is Taylor's last name?",
         "images": {},
         "widgets": {}
     },
     "answerArea": {
-        "type": "multiple",
+        "type": "expression",
         "options": {
-            "content": "",
-            "images": {},
-            "widgets": {}
+            "answerForms": [
+                {
+                    "value": "glaeser",
+                    "form": false,
+                    "simplify": false,
+                    "considered": "correct",
+                    "key": 0
+                },
+                {
+                    "value": "Glaeser",
+                    "form": false,
+                    "simplify": false,
+                    "considered": "correct",
+                    "key": 1
+                }
+            ],
+            "buttonSets": [
+                "basic"
+            ],
+            "functions": [
+                "f",
+                "g",
+                "h"
+            ],
+            "times": false
         },
-        "calculator": false
+        "calculator": false,
+        "periodicTable": false
     },
     "itemDataVersion": {
         "major": 0,
