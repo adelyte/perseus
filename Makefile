@@ -1,5 +1,5 @@
 .PHONY: help build server server-offline all subperseus forcesubperseus webapp-put install clean lint test jest
-PORT=9000
+PORT=8080
 WEBAPP=../webapp
 IOS=../iOS
 SUPPRESSINSTALL=FALSE
@@ -50,8 +50,8 @@ $(PERSEUS_VERSION_FILE): install
 server: install server-offline
 
 server-offline:
-	(sleep 1; echo; echo http://localhost:80/test.html) &
-	./node_modules/.bin/webpack-dev-server --port 80 --output-public-path live-build/ --devtool inline-source-map src/perseus.js
+	(sleep 1; echo; echo http://localhost:8080/test.html) &
+	./node_modules/.bin/webpack-dev-server --port 8080 --output-public-path live-build/ --devtool inline-source-map src/perseus.js
 
 demo:
 	git checkout gh-pages
