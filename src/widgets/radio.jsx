@@ -253,7 +253,9 @@ var BaseRadio = React.createClass({
                     // orig behavior, and adding a TODO here to leave a trace.
                     // Aria recommends bringing the logic for showing a clue to
                     // the same level as this.props.questionCompleted
-                    var showClue = choice.checked && reviewModeClues;
+                    var showClue =
+                            (choice.checked && reviewModeClues) ||
+                            (reviewModeClues && rubric.choices[i].correct);
 
                     var Element = Choice;
                     var elementProps = {
@@ -404,8 +406,8 @@ var Radio = React.createClass({
         var widgets = {};
 
         var modContent = content.replace(
-            /\{\{passage-ref (\d+) (\d+)\}\}/g,
-            (match, passageNum, refNum) => {
+            /\{\{passage-ref (\d+) (\d+)(?: "([^"]*)")?\}\}/g,
+            (match, passageNum, refNum, summaryText) => {
                 var widgetId = "passage-ref " + nextPassageRefId;
                 nextPassageRefId++;
 
@@ -415,6 +417,7 @@ var Radio = React.createClass({
                     options: {
                         passageNumber: parseInt(passageNum),
                         referenceNumber: parseInt(refNum),
+                        summaryText: summaryText,
                     },
                     version: PassageRef.version
                 };
@@ -483,12 +486,11 @@ var Radio = React.createClass({
                 }
             }
 
-            return _.extend({}, this.props, {
+            return {
                 values: values,
                 noneOfTheAboveIndex: noneOfTheAboveIndex,
                 noneOfTheAboveSelected: noneOfTheAboveSelected
-              }
-            );
+            };
         } else {
             // Nothing checked
             return {

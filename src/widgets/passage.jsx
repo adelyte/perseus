@@ -3,7 +3,6 @@ var _ = require("underscore");
 
 var Changeable   = require("../mixins/changeable.jsx");
 var EditorJsonify = require("../mixins/editor-jsonify.jsx");
-var WidgetJsonifyDeprecated = require("../mixins/widget-jsonify-deprecated.jsx");
 
 var Editor = require("../editor.jsx");
 var Renderer = require("../renderer.jsx");
@@ -12,7 +11,7 @@ var PropCheckBox  = require("../components/prop-check-box.jsx");
 var PassageMarkdown = require("./passage/passage-markdown.jsx");
 
 var Passage = React.createClass({
-    mixins: [WidgetJsonifyDeprecated, Changeable],
+    mixins: [Changeable],
 
     propTypes: {
         passageTitle: React.PropTypes.string,
@@ -175,7 +174,9 @@ var Passage = React.createClass({
             );
         }
         var parsedInstructions = PassageMarkdown.parse(instructions);
-        return PassageMarkdown.output(parsedInstructions);
+        return <div className="perseus-widget-passage-instructions">
+            {PassageMarkdown.output(parsedInstructions)}
+        </div>;
     },
 
     _renderContent: function(parsed) {
@@ -230,7 +231,7 @@ var Passage = React.createClass({
         // ref element itself:
         var $refText = $ref.prev();
         if ($refText.length === 0) {
-            // But if there are no elements after the ref, just
+            // But if there are no elements before the ref, just
             // use the ref itself.
             $refText = $ref;
         }
@@ -260,14 +261,32 @@ var Passage = React.createClass({
         return line;
     },
 
+    _getRefContent: function(referenceNumber) {
+        var refRef = PassageMarkdown.START_REF_PREFIX + referenceNumber;
+        var ref = this.refs[refRef];
+        if (!ref) {
+            return null;
+        }
+        return ref.getRefContent();
+    },
+
     getReference: function(referenceNumber) {
         var refStartLine = this._getStartRefLineNumber(referenceNumber);
         var refEndLine = this._getEndRefLineNumber(referenceNumber);
         if (refStartLine == null || refEndLine == null) {
             return null;
         }
+        var refContent = this._getRefContent(referenceNumber);
 
-        return [refStartLine, refEndLine];
+        return {
+            startLine: refStartLine,
+            endLine: refEndLine,
+            content: refContent,
+        };
+    },
+
+    getUserInput: function() {
+        return null;
     },
 
     simpleValidate: function(rubric) {

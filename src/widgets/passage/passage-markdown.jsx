@@ -1,4 +1,5 @@
 var SimpleMarkdown = require("simple-markdown");
+var _ = require("underscore");
 
 var START_REF_PREFIX = "start-ref-";
 var END_REF_PREFIX = "end-ref-";
@@ -37,6 +38,26 @@ var CIRCLE_LABEL_STYLE = {
     textAlign: "center",
 };
 
+var RefStart = React.createClass({
+    propTypes: {
+        refContent: React.PropTypes.node.isRequired,
+    },
+
+    render: function() {
+        return <span style={REF_STYLE}>_</span>;
+    },
+
+    getRefContent: function() {
+        return this.props.refContent;
+    },
+});
+
+var RefEnd = React.createClass({
+    render: function() {
+        return <span style={REF_STYLE}>_</span>;
+    },
+});
+
 var rules = {
     newline: SimpleMarkdown.defaultRules.newline,
     paragraph: SimpleMarkdown.defaultRules.paragraph,
@@ -71,28 +92,102 @@ var rules = {
     },
     refStart: {
         order: SimpleMarkdown.defaultRules.escape.order + .2,
-        match: SimpleMarkdown.inlineRegex(/^\{\{/),
+        match: function(source, state) {
+            var capture = /^\{\{/.exec(source);
+            if (capture) {
+                // We need to do extra processing here to capture the
+                // full text of the reference, which we include so that
+                // we can use that information as a screenreader
+                var closeIndex = 2; // start looking after the opening "{{"
+                var refNestingLevel = 0;
+
+                // Find the closing "}}" for our opening "{{"
+                while (closeIndex < source.length) {
+                    var token = source.slice(closeIndex, closeIndex + 2);
+                    if (token === "{{") {
+                        refNestingLevel++;
+                        // increment an extra character so we get the
+                        // full 2-char token
+                        closeIndex++;
+                    } else if (token === "}}") {
+                        if (refNestingLevel > 0) {
+                            refNestingLevel--;
+                            // increment an extra character so we get the
+                            // full 2-char token
+                            closeIndex++;
+                        } else {
+                            break;
+                        }
+                    }
+                    closeIndex++;
+                }
+
+                var refText = source.slice(2, closeIndex);
+
+                // A "magic" capture that matches the opening {{
+                // but captures the full ref text internally :D
+                return [
+                    capture[0],
+                    refText
+                ];
+            } else {
+                return null;
+            }
+        },
         parse: (capture, parse, state) => {
+            if (!state.useRefs) {
+                return {
+                    ref: null,
+                    refContent: null,
+                };
+            }
+
             var ref = state.lastRef + 1;
             state.lastRef = ref;
             state.currentRef.push(ref);
+
+            var refContent = parse(
+                // Curly quotes
+                "(\u201C" + capture[1] + "\u201D)\n\n",
+                _.defaults({
+                    // We don't want to parse refs while looking through
+                    // this refs contents. We definitely don't want
+                    // to make those refs into react refs on the
+                    // passage, for instance!
+                    useRefs: false,
+                }, INITIAL_PARSE_STATE)
+            );
+
             return {
-                ref: ref
+                ref: ref,
+                refContent: refContent,
             };
         },
         react: (node, output, state) => {
-            return <span
-                    ref={START_REF_PREFIX + node.ref}
-                    key={START_REF_PREFIX + node.ref}
-                    style={REF_STYLE}>
-                _
-            </span>;
+            if (node.ref == null) {
+                return null;
+            }
+
+            // We don't pass state here because this is parsed
+            // and output out-of-band. We don't want to affect
+            // our state by the double-output here :).
+            var refContent = output(node.refContent, {});
+            return <RefStart
+                ref={START_REF_PREFIX + node.ref}
+                key={START_REF_PREFIX + node.ref}
+                refContent={refContent} />;
         }
     },
     refEnd: {
         order: SimpleMarkdown.defaultRules.escape.order + .3,
         match: SimpleMarkdown.inlineRegex(/^\}\}/),
         parse: (capture, parse, state) => {
+            if (!state.useRefs) {
+                return {
+                    ref: null,
+                };
+            }
+
             var ref = state.currentRef.pop() || null;
             return {
                 ref: ref
@@ -100,18 +195,14 @@ var rules = {
         },
         react: (node, output, state) => {
             if (node.ref != null) {
-                return <span
+                return <RefEnd
                         ref={END_REF_PREFIX + node.ref}
-                        key={END_REF_PREFIX + node.ref}
-                        style={REF_STYLE}>
-                    _
-                </span>;
+                        key={END_REF_PREFIX + node.ref} />;
             } else {
-                // if we didn't have a matching start reference, don't output
-                // a ref
-                return <span key={state.key} style={REF_STYLE}>
-                    _
-                </span>;
+                // if we didn't have a matching start reference, or
+                // we aren't parsing refs for this pass (we do this
+                // inside of refContent), don't output a ref
+                return null;
             }
         }
     },
@@ -212,15 +303,20 @@ var rules = {
     text: SimpleMarkdown.defaultRules.text,
 };
 
+var INITIAL_PARSE_STATE = {
+    currentRef: [],
+    useRefs: true,
+    lastRef: 0,
+    lastFootnote: {id: 0, text: ""}
+};
 var builtParser = SimpleMarkdown.parserFor(rules);
 var parse = (source, state) => {
     state = state || {};
     var paragraphedSource = source + "\n\n";
-    return builtParser(paragraphedSource, _.extend(state, {
-        currentRef: [],
-        lastRef: 0,
-        lastFootnote: {id: 0, text: ""}
-    }));
+    return builtParser(
+        paragraphedSource,
+        _.extend(state, INITIAL_PARSE_STATE)
+    );
 };
 
 module.exports = {

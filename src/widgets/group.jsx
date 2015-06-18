@@ -1,3 +1,5 @@
+var _ = require("underscore");
+
 var ApiOptions = require("../perseus-api.jsx").Options;
 var Changeable   = require("../mixins/changeable.jsx");
 var Editor = require("../editor.jsx");
@@ -202,6 +204,10 @@ var GroupEditor = React.createClass({
             onChange={this.change("metadata")} />;
     },
 
+    getSaveWarnings: function() {
+        return this.refs.editor.getSaveWarnings();
+    },
+
     serialize: function() {
         return _.extend({}, this.refs.editor.serialize(), {
             metadata: this.props.metadata
@@ -209,8 +215,11 @@ var GroupEditor = React.createClass({
     },
 });
 
-var traverseChildWidgets = function(props, widgetCallback, traverseRenderer) {
-    traverseRenderer(props, widgetCallback);
+var traverseChildWidgets = function(
+        props,
+        traverseRenderer) {
+
+    return _.extend({}, props, traverseRenderer(props));
 };
 
 module.exports = {

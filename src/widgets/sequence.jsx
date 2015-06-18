@@ -1,3 +1,5 @@
+var _ = require("underscore");
+
 var ApiOptions = require("../perseus-api.jsx").Options;
 var Changeable   = require("../mixins/changeable.jsx");
 var Editor = require("../editor.jsx");
@@ -251,10 +253,19 @@ var SequenceEditor = React.createClass({
     },
 });
 
-var traverseChildWidgets = function(props, widgetCallback, traverseRenderer) {
-    _.each(props.json, (rendererOptions) => {
-        traverseRenderer(rendererOptions, widgetCallback);
+var traverseChildWidgets = function(
+        props,
+        traverseRenderer) {
+
+    var oldJson = props.json;
+    if (!_.isArray(oldJson)) {
+        oldJson = [oldJson];
+    }
+    var json = _.map(oldJson, (rendererOptions) => {
+        return traverseRenderer(rendererOptions);
     });
+
+    return _.extend({}, props, {json: json});
 };
 
 module.exports = {

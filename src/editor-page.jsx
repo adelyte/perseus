@@ -1,12 +1,13 @@
 var React = require('react');
 var _ = require("underscore");
 
+var ApiOptions = require("./perseus-api.jsx").Options;
 var CombinedHintsEditor = require("./hint-editor.jsx");
 var EnabledFeatures = require("./enabled-features.jsx");
+var FixPassageRefs = require("./util/fix-passage-refs.jsx");
 var ItemEditor = require("./item-editor.jsx");
 var ItemRenderer = require("./item-renderer.jsx");
 var JsonEditor = require("./json-editor.jsx");
-var ApiOptions = require("./perseus-api.jsx").Options;
 
 var EditorPage = React.createClass({
     propTypes: {
@@ -57,6 +58,10 @@ var EditorPage = React.createClass({
                             checked={this.props.jsonMode}
                             onChange={this.toggleJsonMode} />
                     </label>
+                    {" "}
+                    <button type="button" onClick={this._fixPassageRefs}>
+                        Fix passage-refs
+                    </button>
                 </div>
             }
 
@@ -168,6 +173,15 @@ var EditorPage = React.createClass({
             json: newJson,
         });
         this.props.onChange(newJson);
+    },
+
+    _fixPassageRefs: function() {
+        var itemData = this.serialize();
+        var newItemData = FixPassageRefs(itemData);
+        this.setState({
+            json: newItemData,
+        });
+        this.props.onChange(newItemData);
     },
 
     scorePreview: function() {

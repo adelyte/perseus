@@ -654,6 +654,11 @@ body.sat-section {
                     width: 512px;
                     box-sizing: border-box;
 
+                    .perseus-widget-passage-container {
+                        .perseus-widget-passage-instructions div.paragraph {
+                            margin-top: 0;
+                        }
+                    }
                     .perseus-widget-passage {
                         // We've replaced the margin here with padding in the
                         // parent element to stay consistent with non-passage
@@ -739,6 +744,7 @@ body.sat-section {
         margin-left: auto;
         margin-right: auto;
         width: @satContentWidth;
+
         .perseus-input-with-answer-blurb {
             > span {
                 display: inline-block;
@@ -797,8 +803,9 @@ body.sat-section {
             }
 
             .perseus-column {
-                overflow-y: auto;
                 display: inline-block;
+                overflow-y: auto;
+                vertical-align: top;
 
                 & > .paragraph {
                     margin-top: 0;
@@ -815,6 +822,11 @@ body.sat-section {
                     width: 512px;
                     box-sizing: border-box;
 
+                    .perseus-widget-passage-container {
+                        .perseus-widget-passage-instructions div.paragraph {
+                            margin-top: 0;
+                        }
+                    }
                     .perseus-widget-passage {
                         // We've replaced the margin here with padding in the
                         // parent element to stay consistent with non-passage
@@ -845,6 +857,7 @@ body.sat-section {
                     // 1024px. TODO to keep some of these #s in vars and use
                     // arithmetic!
                     padding-left: 32px;
+                    padding-right: 32px;
                     width: 448px;
                     .perseus-group {
                         margin-bottom: 20px;

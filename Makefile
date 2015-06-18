@@ -50,8 +50,8 @@ $(PERSEUS_VERSION_FILE): install
 server: install server-offline
 
 server-offline:
-	(sleep 1; echo; echo http://localhost:$(PORT)/test.html) &
-	./node_modules/.bin/webpack-dev-server --port $(PORT) --output-public-path live-build/ --devtool inline-source-map src/perseus.js
+	(sleep 1; echo; echo http://localhost:process.env.PORT/test.html) &
+	./node_modules/.bin/webpack-dev-server --port process.env.PORT --output-public-path live-build/ --devtool inline-source-map src/perseus.js
 
 demo:
 	git checkout gh-pages
@@ -116,6 +116,9 @@ ifneq ("$(SUPPRESSINSTALL)","TRUE")
 	ln -s ../kmath node_modules/kmath
 	rm -rf node_modules/simple-markdown
 	ln -s ../simple-markdown node_modules/simple-markdown
+	rm -rf node_modules/jquery
+	mkdir -p node_modules/jquery
+	echo "module.exports = window.$$" > node_modules/jquery/index.js
 # very hacks to prevent simple-markdown from pulling in a separate version of react.
 # basically, we need its require("react") to resolve to perseus' react, instead of
 # one in its node_modules (yuck!) (same for "underscore")

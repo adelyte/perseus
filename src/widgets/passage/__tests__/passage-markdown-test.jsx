@@ -67,7 +67,14 @@ describe("passage markdown", () => {
                     },
                     {
                         type: "refStart",
-                        ref: 1
+                        ref: 1,
+                        refContent: [{
+                            type: "paragraph",
+                            content: [
+                                {type: "text", content: "(\u201Cref\u201D"},
+                                {type: "text", content: ")"},
+                            ]
+                        }],
                     },
                     {
                         type: "text",
@@ -78,6 +85,90 @@ describe("passage markdown", () => {
                         ref: 1
                     },
                 ]
+            }]);
+        });
+
+        it("should handle nested refs", () => {
+            var parsed = parse(
+                "This is a {{ref {{inside of another ref}}}}"
+            );
+            validateParse(parsed, [{
+                type: "paragraph",
+                content: [
+                    {
+                        type: "text",
+                        content: "This is a ",
+                    },
+                    {
+                        type: "refStart",
+                        ref: 1,
+                        refContent: [{
+                            type: "paragraph",
+                            content: [
+                                {
+                                    type: "text",
+                                    content: "(\u201Cref ",
+                                },
+                                {
+                                    type: "refStart",
+                                    ref: null,
+                                    refContent: null,
+                                },
+                                {
+                                    type: "text",
+                                    content: "inside of another ref"
+                                },
+                                {
+                                    type: "refEnd",
+                                    ref: null,
+                                },
+                                {
+                                    type: "text",
+                                    content: "\u201D",
+                                },
+                                {
+                                    type: "text",
+                                    content: ")",
+                                }
+                            ],
+                        }],
+                    },
+                    {
+                        type: "text",
+                        content: "ref ",
+                    },
+                    {
+                        type: "refStart",
+                        ref: 2,
+                        refContent: [{
+                            type: "paragraph",
+                            content: [
+                                {
+                                    type: "text",
+                                    content: "(\u201C" +
+                                        "inside of another ref" +
+                                        "\u201D",
+                                },
+                                {
+                                    type: "text",
+                                    content: ")",
+                                },
+                            ],
+                        }],
+                    },
+                    {
+                        type: "text",
+                        content: "inside of another ref",
+                    },
+                    {
+                        type: "refEnd",
+                        ref: 2,
+                    },
+                    {
+                        type: "refEnd",
+                        ref: 1,
+                    },
+                ],
             }]);
         });
     });
