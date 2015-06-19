@@ -50,8 +50,8 @@ $(PERSEUS_VERSION_FILE): install
 server: install server-offline
 
 server-offline:
-	(sleep 1; echo; echo http://localhost:process.env.PORT/test.html) &
-	./node_modules/.bin/webpack-dev-server --port process.env.PORT --output-public-path live-build/ --devtool inline-source-map src/perseus.js
+	(sleep 1; echo; echo http://localhost:$(PORT)/test.html) &
+	./node_modules/.bin/webpack-dev-server --port $(PORT) --output-public-path live-build/ --devtool inline-source-map src/perseus.js
 
 demo:
 	git checkout gh-pages
